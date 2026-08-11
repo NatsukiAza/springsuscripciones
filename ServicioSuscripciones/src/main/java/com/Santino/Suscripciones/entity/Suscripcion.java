@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import java.util.Date;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -14,19 +14,21 @@ import java.util.UUID;
 public class Suscripcion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID ID;
+    private Long ID;
     private Long planID;
     private Long userID;
-    private Date fechaIni;
-    private Date fechaFin;
+    private LocalDateTime fechaIni;
+    private LocalDateTime fechaFin;
 
     public Suscripcion(){}
 
     public Suscripcion(Long planID){
         this.planID = planID;
+        fechaIni = LocalDateTime.now();
+        userID = 1L;
     }
 
-    public UUID getID(){
+    public Long getID(){
         return ID;
     }
 
@@ -46,19 +48,19 @@ public class Suscripcion {
         this.planID = planID;
     }
 
-    public Date getFechaIni(){
+    public LocalDateTime getFechaIni(){
         return fechaIni;
     }
 
-    public void setFechaIni(Date fechaIni){
+    public void setFechaIni(LocalDateTime fechaIni){
         this.fechaIni = fechaIni;
     }
 
-    public Date getFechaFin(){
+    public LocalDateTime getFechaFin(){
         return fechaFin;
     }
 
-    public void setFechaFin(Date fechaFin){
+    public void setFechaFin(LocalDateTime fechaFin){
         this.fechaFin = fechaFin;
     }
 

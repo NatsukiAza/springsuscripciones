@@ -10,9 +10,13 @@ import org.springframework.http.ResponseEntity;
 
 
 @RestController
-public class SuscripcionesController {
+public class SuscripcionController {
     
-    private SuscripcionService suscripcionService;
+    private final SuscripcionService suscripcionService;
+
+    public SuscripcionController(SuscripcionService suscripcionService){
+        this.suscripcionService = suscripcionService;
+    }
 
     @PostMapping("/suscribirse")
     public ResponseEntity<Suscripcion> suscribirse(@RequestParam Long plan) {
