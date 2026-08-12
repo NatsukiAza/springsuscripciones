@@ -27,11 +27,6 @@ public class PlanController {
     public ResponseEntity<Plan> crearPlan(@RequestBody PlanRequest request) {
 
         final Plan planGuardado = planService.crearPlan(new Plan(request.nombre(), request.descripcion()));
-        
-        if(planGuardado == null){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("El plan ya existe");
-        }
-
         return ResponseEntity.ok(planGuardado);
     }
     

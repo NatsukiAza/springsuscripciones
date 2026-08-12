@@ -19,7 +19,7 @@ public class SuscripcionController {
     }
 
     @PostMapping("/suscribirse")
-    public ResponseEntity<Suscripcion> suscribirse(@RequestParam Long plan) {
+    public ResponseEntity<Suscripcion> suscribirse(@RequestParam String plan) {
         
         Suscripcion suscripcionGuardada = suscripcionService.crearSuscripcion(plan);
         return ResponseEntity.ok(suscripcionGuardada);

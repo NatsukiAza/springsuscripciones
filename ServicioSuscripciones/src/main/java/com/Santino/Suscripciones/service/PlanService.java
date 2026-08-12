@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.Santino.Suscripciones.entity.Plan;
 import com.Santino.Suscripciones.repository.PlanRepository;
+import com.Santino.Suscripciones.exception.PlanAlreadyExists;
+
 import java.util.Optional;
 
 @Service
@@ -16,13 +18,13 @@ public class PlanService {
 
     public Plan crearPlan(Plan plan){
         if(planRepository.existsByNombre(plan.getNombre())){
-            return null;
+            throw new PlanAlreadyExists("Ya existe un plan con ese nombre");
         }
 
         return planRepository.save(plan);
     }
 
-    public Optional<Plan> mostrarPlanes(String nombre){
+    public Optional<Plan> mostrarPlan(String nombre){
         return planRepository.findByNombre(nombre);
     }
 
