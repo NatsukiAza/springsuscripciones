@@ -1,6 +1,4 @@
-package com.Santino.Usuario.security;
-
-import com.Santino.Usuario.entity.Usuario;
+package com.Santino.Suscripciones.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -10,7 +8,6 @@ import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,23 +15,21 @@ public class JwtService {
 
     private static final String SECRET_KEY = "MICLAVESECRETASUPERSEGURAYMUYLARGAPARASPRINGSECURITY";
 
-    public String generarToken(Usuario usuario) {
-        return Jwts.builder()
-                .subject(usuario.getUsername())
-                .claim("userID", usuario.getID())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(getSignKey())
-                .compact();
-    }
-
     public String extraerUsername(String token) {
         return extraerClaim(token, Claims::getSubject);
     }
 
-    public boolean esTokenValido(String token, UserDetails userDetails) {
-        final String username = extraerUsername(token);
-        return (username.equals(userDetails.getUsername()) && !esTokenExpirado(token));
+    public Long extraerUserID(String token) {
+        return extraerClaim(token, claims -> {
+            Object valor = claims.get("userID");
+            if (valor instanceof Number numero)
+                return numero.longValue();
+            return null;
+        });
+    }
+
+    public boolean esTokenValido(String token) {
+        return !esTokenExpirado(token);
     }
 
     private boolean esTokenExpirado(String token) {

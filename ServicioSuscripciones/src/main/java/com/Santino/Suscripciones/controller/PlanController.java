@@ -11,15 +11,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-
 
 @RestController
 public class PlanController {
-    
+
     private final PlanService planService;
 
-    public PlanController(PlanService planService){
+    public PlanController(PlanService planService) {
         this.planService = planService;
     }
 
@@ -29,12 +27,10 @@ public class PlanController {
         final Plan planGuardado = planService.crearPlan(new Plan(request.nombre(), request.descripcion()));
         return ResponseEntity.ok(planGuardado);
     }
-    
 
     @GetMapping("/plan")
     public boolean existPlan(@RequestParam String nombre) {
         return planService.existPlan(nombre);
     }
-    
 
 }
