@@ -5,7 +5,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import java.util.Date;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,6 +17,7 @@ public class Suscripcion {
     private Long userID;
     private LocalDateTime fechaIni;
     private LocalDateTime fechaFin;
+    private String estado;
 
     public Suscripcion() {
     }
@@ -26,6 +26,7 @@ public class Suscripcion {
         this.planID = planID;
         fechaIni = LocalDateTime.now();
         this.userID = userID;
+        estado = "Pendiente";
     }
 
     public Long getID() {
@@ -62,6 +63,14 @@ public class Suscripcion {
 
     public void setFechaFin(LocalDateTime fechaFin) {
         this.fechaFin = fechaFin;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
 }

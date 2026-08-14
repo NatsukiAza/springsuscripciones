@@ -1,5 +1,5 @@
 package com.Santino.Pagos.dto;
 
-public record SuscripcionResponse (String estado, Long planId){
-    
+public record SuscripcionResponse(Long suscripcionId, Long pagoId) {
+
 }

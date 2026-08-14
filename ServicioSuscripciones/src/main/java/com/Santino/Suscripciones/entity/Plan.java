@@ -16,31 +16,42 @@ public class Plan {
 
     private String nombre;
     private String descripcion;
+    private Long costo;
 
-    public Plan(){}
-
-    public Plan(String nombre, String descripcion){
-        this.nombre = nombre;
-        this.descripcion = descripcion;
+    public Plan() {
     }
 
-    public Long getID(){
+    public Plan(String nombre, String descripcion, Long costo) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.costo = costo;
+    }
+
+    public Long getID() {
         return ID;
     }
 
-    public String getNombre(){
+    public String getNombre() {
         return nombre;
     }
 
-    public void setNombre(String nombre){
+    public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public String getDescripcion(){
+    public String getDescripcion() {
         return descripcion;
     }
 
-    public void setDescripcion(String descripcion){
+    public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public Long getCosto() {
+        return costo;
+    }
+
+    public void setCosto(Long costo) {
+        this.costo = costo;
     }
 }

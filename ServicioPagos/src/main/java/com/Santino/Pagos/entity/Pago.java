@@ -6,20 +6,23 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.util.Date;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "pago")
 public class Pago {
-    
-    public Pago(){
+
+    public Pago() {
 
     }
 
-    public Pago(Long userID, Long suscripcionID, Long monto){
+    public Pago(Long userID, Long suscripcionID, Long monto) {
         this.userID = userID;
         this.suscripcionID = suscripcionID;
         this.monto = monto;
+        estado = "Pendiente";
+        fechaHora = LocalDateTime.now();
     }
 
     @Id
@@ -36,46 +39,49 @@ public class Pago {
 
     private String estado;
 
-    private Date fechaHora;
+    private LocalDateTime fechaHora;
 
-    public Long getID(){
+    public Long getID() {
         return ID;
     }
 
-    public Long getUserID(){
+    public Long getUserID() {
         return userID;
     }
 
-    public void setUserID(Long userID){
+    public void setUserID(Long userID) {
         this.userID = userID;
     }
 
-    public Long getSuscripcionID(){
+    public Long getSuscripcionID() {
         return suscripcionID;
     }
 
-    public void setSuscripcionID(Long suscripcionID){
+    public void setSuscripcionID(Long suscripcionID) {
         this.suscripcionID = suscripcionID;
     }
 
-    public Long getMonto(){
+    public Long getMonto() {
         return monto;
     }
 
-    public void setMonto(Long monto){
+    public void setMonto(Long monto) {
         this.monto = monto;
     }
 
-    public String getEstado(){
+    public String getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado){
+    public void setEstado(String estado) {
         this.estado = estado;
     }
 
-    public Date getFechaHora(){
+    public LocalDateTime getFechaHora() {
         return fechaHora;
     }
 
+    public void setFechaHora(LocalDateTime fechaHora) {
+        this.fechaHora = fechaHora;
+    }
 }

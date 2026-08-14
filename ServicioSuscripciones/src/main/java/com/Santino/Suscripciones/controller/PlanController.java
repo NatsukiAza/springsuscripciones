@@ -24,7 +24,8 @@ public class PlanController {
     @PostMapping("/plan/crear")
     public ResponseEntity<Plan> crearPlan(@RequestBody PlanRequest request) {
 
-        final Plan planGuardado = planService.crearPlan(new Plan(request.nombre(), request.descripcion()));
+        final Plan planGuardado = planService
+                .crearPlan(new Plan(request.nombre(), request.descripcion(), request.costo()));
         return ResponseEntity.ok(planGuardado);
     }
 

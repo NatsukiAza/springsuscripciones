@@ -1,8 +1,11 @@
 package com.Santino.Suscripciones.service;
 
-import com.Santino.Suscripciones.service.PlanService;
+import com.Santino.Suscripciones.dto.SuscripcionResponse;
 import com.Santino.Suscripciones.repository.SuscripcionRepository;
 import com.Santino.Suscripciones.entity.Suscripcion;
+import com.Santino.Suscripciones.publisher.SuscripcionEventPublisher;
+import com.Santino.Suscripciones.dto.PagoResponse;
+import com.Santino.Suscripciones.dto.PagoRequest;
 import com.Santino.Suscripciones.entity.Plan;
 
 import java.util.NoSuchElementException;
@@ -15,13 +18,16 @@ public class SuscripcionService {
 
     private final SuscripcionRepository suscripcionRepository;
     private final PlanService planService;
+    private final SuscripcionEventPublisher eventPublisher;
 
-    public SuscripcionService(SuscripcionRepository suscripcionRepository, PlanService planService) {
+    public SuscripcionService(SuscripcionRepository suscripcionRepository, PlanService planService,
+            SuscripcionEventPublisher eventPublisher) {
         this.suscripcionRepository = suscripcionRepository;
         this.planService = planService;
+        this.eventPublisher = eventPublisher;
     }
 
-    public final Suscripcion crearSuscripcion(String plan, Long userId) {
+    public Suscripcion crearSuscripcion(String plan, Long userId) {
 
         Optional<Plan> planDeseado = planService.mostrarPlan(plan);
         if (planDeseado.isEmpty())
@@ -29,6 +35,35 @@ public class SuscripcionService {
 
         final Suscripcion suscripcion = new Suscripcion(planDeseado.get().getID(), userId);
         final Suscripcion suscripcionGuardada = suscripcionRepository.save(suscripcion);
+        eventPublisher
+                .publicarSuscripcion(
+                        new PagoRequest(userId, suscripcionGuardada.getID(), planDeseado.get().getCosto()));
         return suscripcionGuardada;
+    }
+
+    public void handlePagoExitoso(PagoResponse response) {
+        Optional<Suscripcion> suscripcionGuardada = suscripcionRepository.findById(response.suscripcionId());
+
+        suscripcionGuardada.get().setEstado("Activo");
+
+        suscripcionRepository.save(suscripcionGuardada.get());
+    }
+
+    public void handlePagoFallido(PagoResponse response) {
+        Optional<Suscripcion> suscripcionGuardada = suscripcionRepository.findById(response.suscripcionId());
+
+        suscripcionGuardada.get().setEstado("Pago rechazado");
+
+        suscripcionRepository.save(suscripcionGuardada.get());
+    }
+
+    public SuscripcionResponse verPlanUsuario(Long userId) {
+        Optional<Suscripcion> suscripcionEncontrada = suscripcionRepository.findByUserID(userId);
+
+        if (suscripcionEncontrada.isEmpty())
+            throw new NoSuchElementException("No se encontro suscripcion para este usuario");
+
+        return new SuscripcionResponse(suscripcionEncontrada.get().getID(), suscripcionEncontrada.get().getUserID(),
+                suscripcionEncontrada.get().getPlanID(), suscripcionEncontrada.get().getEstado());
     }
 }

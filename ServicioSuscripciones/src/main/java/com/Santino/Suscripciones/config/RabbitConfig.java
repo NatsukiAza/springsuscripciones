@@ -1,4 +1,4 @@
-package com.Santino.Pagos.config;
+package com.Santino.Suscripciones.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -25,11 +25,11 @@ public class RabbitConfig {
     @Value("${app.rabbitmq.queue.exitoso}")
     public String pagoExitosoQueueName;
 
-    @Value("${app.rabbitmq.routing-key.exitoso}")
-    public String pagoExitosoRoutingKey;
-
     @Value("${app.rabbitmq.queue.fallido}")
     public String pagoFallidoQueueName;
+
+    @Value("${app.rabbitmq.routing-key.exitoso}")
+    public String pagoExitosoRoutingKey;
 
     @Value("${app.rabbitme.routing-key.fallido}")
     public String pagoFallidoRoutingKey;
@@ -51,11 +51,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue suscripcionCreadaQueue() {
-        return new Queue(suscripcionCreadaQueueName, true);
-    }
-
-    @Bean
     public Queue pagoExitosoQueue() {
         return new Queue(pagoExitosoQueueName, true);
     }
@@ -63,6 +58,11 @@ public class RabbitConfig {
     @Bean
     public Queue pagoFallidoQueue() {
         return new Queue(pagoFallidoQueueName, true);
+    }
+
+    @Bean
+    public Queue suscripcionCreadaQueue() {
+        return new Queue(suscripcionCreadaQueueName, true);
     }
 
     @Bean

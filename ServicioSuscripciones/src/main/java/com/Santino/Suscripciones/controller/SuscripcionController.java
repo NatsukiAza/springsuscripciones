@@ -1,9 +1,11 @@
 package com.Santino.Suscripciones.controller;
 
+import com.Santino.Suscripciones.dto.SuscripcionResponse;
 import com.Santino.Suscripciones.entity.Suscripcion;
 import com.Santino.Suscripciones.service.SuscripcionService;
 
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,13 @@ public class SuscripcionController {
 
     public SuscripcionController(SuscripcionService suscripcionService) {
         this.suscripcionService = suscripcionService;
+    }
+
+    @GetMapping("/suscripcion")
+    public ResponseEntity<SuscripcionResponse> verSuscripcion(Authentication auth) {
+        Long userId = (Long) auth.getPrincipal();
+        SuscripcionResponse response = suscripcionService.verPlanUsuario(userId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/suscribirse")
