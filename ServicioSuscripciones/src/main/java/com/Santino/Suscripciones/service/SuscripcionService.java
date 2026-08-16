@@ -1,6 +1,7 @@
 package com.Santino.Suscripciones.service;
 
 import com.Santino.Suscripciones.dto.SuscripcionResponse;
+import com.Santino.Suscripciones.dto.UsuarioAutenticado;
 import com.Santino.Suscripciones.repository.SuscripcionRepository;
 import com.Santino.Suscripciones.entity.Suscripcion;
 import com.Santino.Suscripciones.publisher.SuscripcionEventPublisher;
@@ -27,17 +28,18 @@ public class SuscripcionService {
         this.eventPublisher = eventPublisher;
     }
 
-    public Suscripcion crearSuscripcion(String plan, Long userId) {
+    public Suscripcion crearSuscripcion(String plan, UsuarioAutenticado usuario) {
 
         Optional<Plan> planDeseado = planService.mostrarPlan(plan);
         if (planDeseado.isEmpty())
             throw new NoSuchElementException("El plan solicitado no existe");
 
-        final Suscripcion suscripcion = new Suscripcion(planDeseado.get().getID(), userId);
+        final Suscripcion suscripcion = new Suscripcion(planDeseado.get().getID(), usuario.userId());
         final Suscripcion suscripcionGuardada = suscripcionRepository.save(suscripcion);
         eventPublisher
                 .publicarSuscripcion(
-                        new PagoRequest(userId, suscripcionGuardada.getID(), planDeseado.get().getCosto()));
+                        new PagoRequest(usuario.userId(), usuario.email(), suscripcionGuardada.getID(),
+                                planDeseado.get().getCosto(), planDeseado.get().getNombre()));
         return suscripcionGuardada;
     }
 
@@ -57,8 +59,8 @@ public class SuscripcionService {
         suscripcionRepository.save(suscripcionGuardada.get());
     }
 
-    public SuscripcionResponse verPlanUsuario(Long userId) {
-        Optional<Suscripcion> suscripcionEncontrada = suscripcionRepository.findByUserID(userId);
+    public SuscripcionResponse verPlanUsuario(UsuarioAutenticado usuario) {
+        Optional<Suscripcion> suscripcionEncontrada = suscripcionRepository.findByUserID(usuario.userId());
 
         if (suscripcionEncontrada.isEmpty())
             throw new NoSuchElementException("No se encontro suscripcion para este usuario");

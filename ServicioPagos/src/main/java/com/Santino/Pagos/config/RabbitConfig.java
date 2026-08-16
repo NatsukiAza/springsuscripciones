@@ -31,7 +31,7 @@ public class RabbitConfig {
     @Value("${app.rabbitmq.queue.fallido}")
     public String pagoFallidoQueueName;
 
-    @Value("${app.rabbitme.routing-key.fallido}")
+    @Value("${app.rabbitmq.routing-key.fallido}")
     public String pagoFallidoRoutingKey;
 
     @Value("${app.rabbitmq.queue.suscripcion-creada}")
@@ -39,6 +39,9 @@ public class RabbitConfig {
 
     @Value("${app.rabbitmq.routing-key.suscripcion-creada}")
     public String suscripcionRoutingKey;
+
+    @Value("${app.rabbitmq.queue.notificacion}")
+    public String suscripcionNotifQueueName;
 
     @Bean
     public TopicExchange pagosExchange() {
@@ -53,6 +56,11 @@ public class RabbitConfig {
     @Bean
     public Queue suscripcionCreadaQueue() {
         return new Queue(suscripcionCreadaQueueName, true);
+    }
+
+    @Bean
+    public Queue PagoNotifQueue() {
+        return new Queue(suscripcionNotifQueueName, true);
     }
 
     @Bean
@@ -87,5 +95,21 @@ public class RabbitConfig {
                 .bind(suscripcionCreadaQueue)
                 .to(suscripcionExchange)
                 .with(suscripcionRoutingKey);
+    }
+
+    @Bean
+    public Binding bindingSuscripcionNotificadaExitosa(Queue PagoNotifQueue, TopicExchange pagosExchange) {
+        return BindingBuilder
+                .bind(PagoNotifQueue)
+                .to(pagosExchange)
+                .with(pagoExitosoRoutingKey);
+    }
+
+    @Bean
+    public Binding bindingSuscripcionNotificadaFallida(Queue PagoNotifQueue, TopicExchange pagosExchange) {
+        return BindingBuilder
+                .bind(PagoNotifQueue)
+                .to(pagosExchange)
+                .with(pagoFallidoRoutingKey);
     }
 }

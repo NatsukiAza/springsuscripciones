@@ -1,5 +1,7 @@
 package com.Santino.Suscripciones.config;
 
+import java.beans.BeanProperty;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;

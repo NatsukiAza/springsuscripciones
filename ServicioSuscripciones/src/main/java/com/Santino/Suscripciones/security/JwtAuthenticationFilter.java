@@ -2,6 +2,9 @@ package com.Santino.Suscripciones.security;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.Santino.Suscripciones.dto.UsuarioAutenticado;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import jakarta.servlet.ServletException;
@@ -43,11 +46,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     try {
       final String username = jwtService.extraerUsername(jwt);
       final Long userId = jwtService.extraerUserID(jwt);
+      final String email = jwtService.extraerEmail(jwt);
 
       if (username != null && userId != null && SecurityContextHolder.getContext().getAuthentication() == null
           && jwtService.esTokenValido(jwt)) {
+
+        UsuarioAutenticado usuario = new UsuarioAutenticado(userId, email);
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            userId,
+            usuario,
             null,
             List.of());
 

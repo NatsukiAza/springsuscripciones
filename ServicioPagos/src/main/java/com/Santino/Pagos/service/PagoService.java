@@ -38,10 +38,10 @@ public class PagoService {
             Pago pagoGuardado = pagoRepository.save(pago);
             switch (estado) {
                 case "SUCCESS":
-                    pagoEventPubliser.PagoSuccessPublisher(request.suscripcionID(), pagoGuardado.getID());
+                    pagoEventPubliser.PagoSuccessPublisher(request, pagoGuardado.getID());
                     break;
                 case "FAILURE":
-                    pagoEventPubliser.PagoFailPublisher(request.suscripcionID(), pagoGuardado.getID());
+                    pagoEventPubliser.PagoFailPublisher(request, pagoGuardado.getID());
                     break;
             }
         } catch (Exception ex) {

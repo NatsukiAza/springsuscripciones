@@ -1,6 +1,7 @@
 package com.Santino.Suscripciones.controller;
 
 import com.Santino.Suscripciones.dto.SuscripcionResponse;
+import com.Santino.Suscripciones.dto.UsuarioAutenticado;
 import com.Santino.Suscripciones.entity.Suscripcion;
 import com.Santino.Suscripciones.service.SuscripcionService;
 
@@ -22,17 +23,17 @@ public class SuscripcionController {
 
     @GetMapping("/suscripcion")
     public ResponseEntity<SuscripcionResponse> verSuscripcion(Authentication auth) {
-        Long userId = (Long) auth.getPrincipal();
-        SuscripcionResponse response = suscripcionService.verPlanUsuario(userId);
+        UsuarioAutenticado usuario = (UsuarioAutenticado) auth.getPrincipal();
+        SuscripcionResponse response = suscripcionService.verPlanUsuario(usuario);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/suscribirse")
     public ResponseEntity<Suscripcion> suscribirse(@RequestParam String plan, Authentication auth) {
 
-        Long userId = (Long) auth.getPrincipal();
+        UsuarioAutenticado usuario = (UsuarioAutenticado) auth.getPrincipal();
 
-        Suscripcion suscripcionGuardada = suscripcionService.crearSuscripcion(plan, userId);
+        Suscripcion suscripcionGuardada = suscripcionService.crearSuscripcion(plan, usuario);
         return ResponseEntity.ok(suscripcionGuardada);
     }
 

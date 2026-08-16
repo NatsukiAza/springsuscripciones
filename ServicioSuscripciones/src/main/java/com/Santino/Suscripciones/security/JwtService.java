@@ -28,6 +28,13 @@ public class JwtService {
         });
     }
 
+    public String extraerEmail(String token) {
+        return extraerClaim(token, claims -> {
+            Object valor = claims.get("email");
+            return valor.toString();
+        });
+    }
+
     public boolean esTokenValido(String token) {
         return !esTokenExpirado(token);
     }
