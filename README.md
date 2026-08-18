@@ -97,7 +97,7 @@ Usuarios no publica eventos. Autentica y listo: el JWT viaja en el `Authorizatio
 
 ```mermaid
 sequenceDiagram
-  actor User
+  participant User
   participant U as Usuarios
   participant S as Suscripciones
   participant Q as RabbitMQ
@@ -106,20 +106,20 @@ sequenceDiagram
 
   User->>U: POST /auth/login
   U-->>User: JWT
-  User->>S: POST /suscribirse?plan=Premium
-  S->>S: persiste suscripción Pendiente
+  User->>S: POST /suscribirse plan=Premium
+  S->>S: persiste suscripcion Pendiente
   S->>Q: suscripcion.creada
   Q->>P: listener
-  P->>P: SET NX en Redis (idempotencia)
+  P->>P: SET NX en Redis
   P->>P: simula cobro y persiste Pago
-  alt éxito
+  alt ok
     P->>Q: pago.exitoso
     Q->>S: estado Activo
-    Q->>N: log "pago realizado"
-  else fallo
+    Q->>N: log pago realizado
+  else fail
     P->>Q: pago.fallido
     Q->>S: estado Pago rechazado
-    Q->>N: log "pago rechazado"
+    Q->>N: log pago rechazado
   end
 ```
 
