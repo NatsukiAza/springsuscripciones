@@ -1,0 +1,3 @@
+CREATE DATABASE usuarios;
+CREATE DATABASE suscripciones;
+CREATE DATABASE pagos;

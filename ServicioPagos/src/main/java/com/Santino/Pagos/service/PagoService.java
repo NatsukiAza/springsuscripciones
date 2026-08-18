@@ -14,13 +14,23 @@ public class PagoService {
 
     private final PagoRepository pagoRepository;
     private final PagoEventPublisher pagoEventPubliser;
+    private final IdempotencyService idempotencyService;
 
-    public PagoService(PagoRepository pagoRepository, PagoEventPublisher pagoEventPublisher) {
+    public PagoService(PagoRepository pagoRepository, PagoEventPublisher pagoEventPublisher,
+            IdempotencyService idempotencyService) {
         this.pagoRepository = pagoRepository;
         this.pagoEventPubliser = pagoEventPublisher;
+        this.idempotencyService = idempotencyService;
     }
 
     public void crearPago(PagoRequest request) {
+        crearPago(request, "suscripcion:" + request.suscripcionID());
+    }
+
+    public void crearPago(PagoRequest request, String idempotencyKey) {
+        if (!idempotencyService.esPrimeraVez(idempotencyKey)) {
+            return;
+        }
 
         String estado;
         Pago pago = new Pago(request.userID(), request.suscripcionID(), request.monto());
@@ -45,9 +55,9 @@ public class PagoService {
                     break;
             }
         } catch (Exception ex) {
+            idempotencyService.liberar(idempotencyKey);
             throw new RuntimeException(ex.getMessage());
         }
-
     }
 
 }

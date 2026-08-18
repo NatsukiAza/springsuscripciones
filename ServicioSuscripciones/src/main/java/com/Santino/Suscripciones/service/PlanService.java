@@ -1,5 +1,7 @@
 package com.Santino.Suscripciones.service;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.Santino.Suscripciones.entity.Plan;
@@ -12,25 +14,26 @@ import java.util.Optional;
 public class PlanService {
     private final PlanRepository planRepository;
 
-    public PlanService(PlanRepository planRepository){
+    public PlanService(PlanRepository planRepository) {
         this.planRepository = planRepository;
     }
 
-    public Plan crearPlan(Plan plan){
-        if(planRepository.existsByNombre(plan.getNombre())){
+    @CacheEvict(value = "planes", allEntries = true)
+    public Plan crearPlan(Plan plan) {
+        if (planRepository.existsByNombre(plan.getNombre())) {
             throw new PlanAlreadyExists("Ya existe un plan con ese nombre");
         }
 
         return planRepository.save(plan);
     }
 
-    public Optional<Plan> mostrarPlan(String nombre){
+    @Cacheable(value = "planes", key = "#nombre")
+    public Optional<Plan> mostrarPlan(String nombre) {
         return planRepository.findByNombre(nombre);
     }
 
-    public boolean existPlan(String nombre){
+    public boolean existPlan(String nombre) {
         return planRepository.existsByNombre(nombre);
     }
 
-    
 }

@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secretos y claves ###
+.env
+*.pem
+.aws/

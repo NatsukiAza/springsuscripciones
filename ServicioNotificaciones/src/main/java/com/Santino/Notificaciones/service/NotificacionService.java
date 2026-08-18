@@ -8,7 +8,7 @@ import com.Santino.Notificaciones.dto.NotificacionRequest;
 public class NotificacionService {
 
   public void enviarNotificacion(NotificacionRequest request) {
-    System.out.println(request.email() + ": Se ha " + (request.estado() == "Activo" ? "realizado"
+    System.out.println(request.email() + ": Se ha " + ("Exitoso".equals(request.estado()) ? "realizado"
         : "rechazado") + " un pago para el plan " + request.plan());
   }
 

@@ -1,5 +1,7 @@
 package com.Santino.Suscripciones.entity;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
@@ -8,7 +10,9 @@ import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "planes")
-public class Plan {
+public class Plan implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
