@@ -2,6 +2,9 @@ package com.Santino.Usuario.exception;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Error HTTP")
 public class ErrorResponse {
     private LocalDateTime timestamp;
     private int status;

@@ -30,10 +30,10 @@ class NotificacionServiceTest {
     }
 
     @Test
-    @DisplayName("informa un pago realizado cuando el estado es Activo")
+    @DisplayName("informa un pago realizado cuando el estado es Exitoso")
     void informaPagoRealizado() {
         service.enviarNotificacion(new NotificacionRequest(
-                50L, 99L, new String("Activo"), "ana@mail.com", "premium"));
+                50L, 99L, "Exitoso", "ana@mail.com", "premium"));
 
         assertThat(captura.toString())
                 .contains("ana@mail.com")

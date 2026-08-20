@@ -11,6 +11,7 @@ Lo hice así a propósito. Un monolito hubiera sido más corto; la idea del repo
 - RabbitMQ
 - Redis (cache de planes + idempotencia de cobros)
 - JWT entre servicios
+- OpenAPI 3 + Swagger UI (springdoc) en cada API HTTP
 - Docker Compose para levantar todo
 
 ## Cómo levantarlo
@@ -28,13 +29,15 @@ En Windows: `copy .env.example .env`. Editá `POSTGRES_PASSWORD` si querés; Com
 
 Cuando terminen de loguear `Started ...Application`:
 
-| Servicio       | Puerto | Para qué               |
-| -------------- | ------ | ---------------------- |
-| Usuarios       | 8081   | registro / login       |
-| Suscripciones  | 8080   | planes y suscripciones |
-| Pagos          | 8084   | cobro + webhook        |
-| Notificaciones | 8082   | “mail” por consola     |
-| RabbitMQ UI    | 15672  | guest / guest          |
+| Servicio       | Puerto | Para qué               | Página en el browser |
+| -------------- | ------ | ---------------------- | -------------------- |
+| Usuarios       | 8081   | registro / login       | http://localhost:8081/swagger-ui.html |
+| Suscripciones  | 8080   | planes y suscripciones | http://localhost:8080/swagger-ui.html |
+| Pagos          | 8084   | cobro + webhook        | http://localhost:8084/swagger-ui.html |
+| Notificaciones | 8082   | “mail” por consola     | — (no tiene REST) |
+| RabbitMQ UI    | 15672  | guest / guest          | http://localhost:15672 |
+
+La columna de la derecha no es un programa para instalar. Cada servicio HTTP **ya sirve** una página (Swagger UI) para ver y pegarle a su API. Abrís el link en Chrome/Firefox, igual que la UI de Rabbit. Hay tres páginas porque hay tres APIs; el JWT no salta solo de una a la otra.
 
 Postgres (`5432`) y Redis (`6379`) quedan publicados para debuggear desde la máquina; no hace falta tocarlos para usar la API.
 
@@ -46,12 +49,47 @@ docker compose down
 
 `down -v` además tira el volume de Postgres. Útil si cambiaste el `init.sql` y las databases no aparecen.
 
-### Probar el flujo (muy resumido)
+### Probar el flujo
 
-1. `POST http://localhost:8081/auth/registrarse` y después `/auth/login` → te devuelve un JWT.
-2. Con el token, `POST http://localhost:8080/plan/crear` y `POST http://localhost:8080/suscribirse?plan=Premium`.
-3. Pagos consume `suscripcion.creada`, simula el cobro (~70% ok) y publica `pago.exitoso` o `pago.fallido`.
-4. Suscripciones pasa la suscripción a `Activo` o `Pago rechazado`. Notificaciones imprime el resultado en el log del contenedor.
+#### 1. Registro y login
+
+En el navegador abrí [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html). Tiene que decir **Usuarios** arriba. Si no carga, el contenedor todavía no arrancó (`docker compose logs usuarios`).
+
+1. Expandí `POST /auth/registrarse` → **Try it out**.
+2. El JSON de ejemplo se puede editar. Mandá algo como `{"username":"santi","email":"santi@streamsub.com","password":"clave"}` y **Execute**.
+3. Abajo, **Responses**: `200` es usuario creado; `409` es que ese username/email ya existía.
+4. Expandí `POST /auth/login` → **Try it out** → el mismo username/password → **Execute**.
+5. En el body de la respuesta copiá **solo** el valor de `token` (el `eyJ...`), sin comillas. Eso es el JWT.
+
+Registro y login son públicos: acá no hace falta el candado **Authorize**.
+
+#### 2. Plan y suscripción
+
+Otra pestaña: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) (**Suscripciones**). Esta API sí pide JWT.
+
+1. Arriba a la derecha, **Authorize**. Pegá el token en Value. No escribas `Bearer ` adelante: la UI lo agrega sola. **Authorize** → **Close**.
+2. `POST /plan/crear` → **Try it out** → por ejemplo `{"nombre":"premium","descripcion":"Full HD","costo":1500}` → **Execute**. `409` es plan duplicado; está bien si ya lo creaste.
+3. `POST /suscribirse` → **Try it out** → en el query `plan` poné `premium` (el **nombre**, no el id) → **Execute**. La suscripción nace en `Pendiente`.
+
+Si te olvidaste Authorize, acá ves `403`, no un JSON de negocio.
+
+#### 3. El cobro (no hay botón en Swagger)
+
+Pagos no se dispara desde esta UI. Escucha `suscripcion.creada` en Rabbit, simula el cobro (~70% ok) y publica `pago.exitoso` o `pago.fallido`.
+
+Para ver cómo terminó, en la **misma** pestaña de `:8080` (con el JWT todavía autorizado): `GET /suscripcion` → **Try it out** → **Execute**. El `estado` pasa a `Activo` o `Pago rechazado`. Si sigue `Pendiente`, esperá un segundo y repetí.
+
+Notificaciones no tiene página: imprime el mail simulado en el log:
+
+```bash
+docker compose logs -f notificaciones
+```
+
+El webhook de [http://localhost:8084/swagger-ui.html](http://localhost:8084/swagger-ui.html) es otro camino (el contrato de un PSP: header `Idempotency-Key`, sin JWT). El flujo de arriba **no** lo usa.
+
+Si preferís curl/Postman en vez de la página: mismos paths, header `Authorization: Bearer <token>`. El spec crudo está en `/v3/api-docs` de cada puerto.
+
+La versión automática de este flujo (más listeners y Redis) está en [Tests](#tests).
 
 ## Arquitectura
 
@@ -169,14 +207,24 @@ Cada servicio trae su `Dockerfile` (build Maven + JRE 21). Redis/Postgres/Rabbit
 
 ## Tests
 
-Hay tests unitarios con JUnit 5 + Mockito en los cuatro servicios (servicios, listeners, JWT, handlers). Los `*ApplicationTests` de contexto completo están deshabilitados: piden Rabbit/Postgres y no son el punto de `mvn test` en frío.
+Dos capas, en cada servicio:
+
+**Unitarios** (JUnit 5 + Mockito): servicios, listeners, JWT, handlers. No piden Docker.
+
+**Integración** (Testcontainers + `*ApplicationTests`): levantan Postgres, RabbitMQ y Redis de verdad (las mismas imágenes que Compose), pisan el datasource con `@ServiceConnection` y pegan a la API con MockMvc. Cubren registro/login, planes, suscribirse + evento, webhook + idempotencia, listeners y que `/v3/api-docs` + Swagger UI queden públicos.
+
+Hace falta **Docker Desktop** para los IT. Sin el daemon, fallan al no encontrar un environment de Docker; los unitarios igual corren.
 
 ```bash
-cd ServicioSuscripciones
-./mvnw test
+cd ServicioUsuarios && ./mvnw test
+cd ServicioSuscripciones && ./mvnw test
+cd ServicioPagos && ./mvnw test
+cd ServicioNotificaciones && ./mvnw test
 ```
 
-En Windows: `.\mvnw.cmd test`.
+En Windows: `.\mvnw.cmd test`. Surefire incluye `*IT.java`, así que `mvn test` corre unitarios e integración juntos.
+
+No se corren desde Swagger. Swagger **Try it out** es para el stack de Compose (puertos fijos `8080`/`8081`/`8084`): mismos endpoints HTTP que los IT, a mano, con JWT en **Authorize**. Lo que no es HTTP —listeners de Rabbit, `SET NX` en Redis, `contextLoads`— solo existe en `mvn test`. Notificaciones no tiene REST, así que tampoco Swagger.
 
 ## Cosas que sé que faltan
 
